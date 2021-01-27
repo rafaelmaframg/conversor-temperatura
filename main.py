@@ -2,32 +2,37 @@ import tkinter as tk
 from tkinter.messagebox import showerror
 
 
-#função para tratamento de erro, caso o usuario não insira um valor numerico valido.
-def read_number(valor):
-    try:
-        return float(valor) 
-    except ValueError:
-        showerror(title="Erro!", message=f'Valor Inválido: {valor}', parent=root)
-        return False
 #função para limpar dados e preencher com os novos valores
 def texto_set(entry, texto):
     entry.delete(0,tk.END)
     entry.insert(0,str(texto))
-
-#função principal do programa, aqui é realizado toda a conversão da temperatura    
-def converter():
+    
+def convert_to_fahr(*args):
+    global trace_fahr
+    varfahr.trace_remove("write", trace_fahr)
     celsius_str = entry_celsius.get().strip()
-    fahr_str = entry_fahr.get().strip()
-    if celsius_str:
-        temp_celsius = read_number(celsius_str)
+    try:
+        temp_celsius = float(celsius_str)
         temp_fahr = (temp_celsius * 1.8) + 32
-        texto_set(entry_fahr,temp_fahr)
-        
-    elif fahr_str:
-        temp_fahr = read_number(fahr_str)
+        texto = f'{temp_fahr:.2f}'
+    except:
+        texto ="Invalido"
+    texto_set(entry_fahr,texto)
+    trace_fahr = varfahr.trace('w',convert_to_celsius)
+
+def convert_to_celsius(*args):
+    global trace_celsius
+    varcelsius.trace_remove('write', trace_celsius)
+    fahr_str = entry_fahr.get().strip()
+    try:
+        temp_fahr = float(fahr_str)
         temp_celsius = (temp_fahr -32) / 1.8
-        texto_set(entry_celsius, temp_celsius)
-       
+        texto = temp_celsius
+    except:
+        texto="INVALIDO"
+    texto_set(entry_celsius, texto)
+    trace_celsius = varcelsius.trace('w', convert_to_fahr)
+    
 #interface grafica
 root = tk.Tk()
 root.title("Conversor de Unidades")
@@ -37,19 +42,22 @@ label_celsius = tk.Label(root, text = 'Celsius: ')
 label_fahr = tk.Label(root, text="Fahrenheit: ")
 entry_celsius = tk.Entry(root)
 entry_fahr = tk.Entry(root)
-button = tk.Button(root, text="Converter")
+
 
 label_celsius.grid(row=0, column=0, sticky="w")
 entry_celsius.grid(row=0, column= 1, sticky="we")
 label_fahr.grid(row=1 , column=0 , sticky="w")
 entry_fahr.grid(row=1, column=1, stick="we")
-button.grid(row=2, column=0, columnspan=2)
 
 
 #root.grid_columnconfigure(index=0, weight=0)
 root.grid_columnconfigure(index=1, weight=1)
 
-button['command'] = converter
-
+varcelsius = tk.StringVar()
+varfahr= tk.StringVar()
+entry_celsius['textvariable'] = varcelsius
+entry_fahr['textvariable'] = varfahr
+trace_celsius = varcelsius.trace('w', convert_to_fahr)
+trace_fahr = varfahr.trace('w', convert_to_celsius)
 
 root.mainloop()
